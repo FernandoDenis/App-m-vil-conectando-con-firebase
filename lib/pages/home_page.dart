@@ -26,24 +26,29 @@ class _HomeState extends State<Home> {
             return const Center(child: Text('No hay datos disponibles'));
           } else {
             return ListView.builder(
-              itemCount: snapshot.data?.length,
+              itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
-                // Usamos un Map<String, dynamic> para obtener los datos de cada usuario
-                Map<String, dynamic> usuario = snapshot.data?[index] ?? {};
-
-                // Asignamos valores por defecto si los datos son nulos
-                String nombre = usuario['nombre']?.toString() ?? 'Sin nombre';
-                String aPaterno =
-                    usuario['aPaterno']?.toString() ?? 'Sin apellido';
+                // Asignamos valores por defecto para evitar errores con valores null
+                var usuario = snapshot.data![index];
+                String nombre = usuario['nombre'] ?? 'Sin nombre';
+                String aPaterno = usuario['aPaterno'] ?? 'Sin apellido';
+                String uid = usuario['uid'] ?? '';
 
                 return ListTile(
                   title: Text(nombre),
                   subtitle: Text(aPaterno),
                   leading: CircleAvatar(
-                    child: Text(
-                      nombre.isNotEmpty ? nombre.substring(0, 1) : '?',
-                    ),
+                    child: Text(nombre.isNotEmpty ? nombre[0] : '?'),
                   ),
+                  onTap: () async {
+                    await Navigator.pushNamed(context, '/edit', arguments: {
+                      'uid': uid,
+                      'nombre': nombre,
+                      'email': usuario['email'] ?? '',
+                      'nocuenta': usuario['nocuenta'] ?? '',
+                    });
+                    setState(() {}); // Refresca la lista después de editar
+                  },
                 );
               },
             );
@@ -53,7 +58,7 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.pushNamed(context, '/add');
-          setState(() {});
+          setState(() {}); // Refresca la lista después de agregar un usuario
         },
         child: const Icon(Icons.add),
       ),

@@ -1,33 +1,48 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Creamos la instancia de FirebaseFirestore
+// Inicializa la instancia de FirebaseFirestore
 FirebaseFirestore db = FirebaseFirestore.instance;
 
 // Función para obtener la lista de usuarios desde Firestore
 Future<List<Map<String, dynamic>>> getUsuarios() async {
-  // Lista para almacenar los registros
   List<Map<String, dynamic>> usuarios = [];
 
   // Referencia a la colección "usuarios"
   CollectionReference collectionReferenceUsuarios = db.collection('usuarios');
-
-  // Obtenemos los documentos de la colección
   QuerySnapshot queryUsuarios = await collectionReferenceUsuarios.get();
 
-  // Recorremos los documentos y los añadimos a la lista
+  // Recorre los documentos y agrega cada uno a la lista con su 'uid'
   for (var documento in queryUsuarios.docs) {
-    usuarios.add(documento.data() as Map<String, dynamic>);
+    final Map<String, dynamic> data = documento.data() as Map<String, dynamic>;
+    final usuario = {
+      'uid': documento.id,
+      'nombre': data['nombre'],
+      'email': data['email'],
+      'nocuenta': data['nocuenta'],
+      'aPaterno': data['aPaterno'], // Incluye cualquier otro campo necesario
+    };
+    usuarios.add(usuario);
   }
 
   return usuarios;
 }
 
-// Función para agregar un usuario a Firestore
+// Función para agregar un nuevo usuario a Firestore
 Future<void> agregarUsuario(
-    String nNombre, String nEmail, String nCuenta) async {
+    String nombre, String email, String nocuenta) async {
   await db.collection('usuarios').add({
-    'nombre': nNombre,
-    'email': nEmail,
-    'nocuenta': nCuenta,
+    'nombre': nombre,
+    'email': email,
+    'nocuenta': nocuenta,
+  });
+}
+
+// Función para editar un usuario existente en Firestore
+Future<void> editUsuario(
+    String uid, String eNombre, String eMail, String eCuenta) async {
+  await db.collection('usuarios').doc(uid).set({
+    'nombre': eNombre,
+    'email': eMail,
+    'nocuenta': eCuenta,
   });
 }
